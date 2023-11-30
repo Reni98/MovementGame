@@ -1,25 +1,141 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.7.34024.191
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MovementGame", "MovementGame\MovementGame.csproj", "{4163F510-FD93-470F-BB97-1791BDD776C4}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4163F510-FD93-470F-BB97-1791BDD776C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4163F510-FD93-470F-BB97-1791BDD776C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4163F510-FD93-470F-BB97-1791BDD776C4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4163F510-FD93-470F-BB97-1791BDD776C4}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {B0683155-51AF-425F-A1C5-B5BD575D3331}
-	EndGlobalSection
-EndGlobal
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace MovementGame
+{
+    public partial class Form1 : Form
+    {
+
+        Image player;
+        List<string> playerMovements = new List<string>();
+        int steps = 0;
+        int slowDownFrameRate = 0;
+        bool goLeft, goRight,goUp, goDown;
+        int playerx;
+        int playery;
+        int playerHeight = 100;
+        int playerWidth = 100;
+        int playerSpeed = 8;
+
+
+        public Form1()
+        {
+            InitializeComponent();
+            SetUp();
+        }
+
+        private void KeyIsDown(object sender, KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Left)
+            {
+                goLeft = true;
+            }
+            if(e.KeyCode == Keys.Right)
+            {
+                goRight = true;
+            }
+            if(e.KeyCode == Keys.Up)
+            { goUp = true; }
+            if(e.KeyCode == Keys.Down)
+            {
+                goDown = true;
+            }
+            
+        }
+
+        private void KeyIsUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Left)
+            {
+                goLeft = false;
+            }
+            if (e.KeyCode == Keys.Right)
+            {
+                goRight = false;
+            }
+            if (e.KeyCode == Keys.Up)
+            { goUp = false; }
+            if (e.KeyCode == Keys.Down)
+            {
+                goDown = false;
+            }
+        }
+
+        private void FormPaintEvent(object sender, PaintEventArgs e)
+        {
+            Graphics Canvas = e.Graphics;
+            Canvas.DrawImage(player,playerx,playery,playerWidth,playerHeight);
+
+        }
+
+        private void timerEvent(object sender, EventArgs e)
+        {
+            if(goLeft && playerx > 0)
+            {
+                playerx -= playerSpeed;
+                AnimatePlayer(4,7);
+            }
+            else if(goRight && playerx  + playerWidth < this.ClientSize.Width) 
+            { 
+                playerx += playerSpeed;
+                AnimatePlayer(8,11);
+            }
+            else if(goUp && playery > 0)
+            {
+                playery -= playerSpeed;
+                AnimatePlayer(12,15);
+            }
+            else if (goDown && playery + playerHeight < this.ClientSize.Height)
+            {
+                playery += playerSpeed;
+                AnimatePlayer(0, 3);
+            }
+            else
+            {
+                AnimatePlayer(0, 0);
+            }
+
+            this.Invalidate();
+            lblMovement.Text = "Movements: " + steps;
+        }
+
+        private void SetUp()
+        {
+            this.BackgroundImage = Image.FromFile("bg.jpg");
+            this.BackgroundImageLayout = ImageLayout.Stretch;
+            this.DoubleBuffered = true;
+
+
+            //load the player files to list
+            playerMovements = Directory.GetFiles("player", "*.png").ToList();
+            player = Image.FromFile(playerMovements[0]);
+        }
+
+        private void AnimatePlayer(int start,int end)
+        {
+            slowDownFrameRate += 1;
+            if(slowDownFrameRate == 4)
+            {
+                steps++;
+                slowDownFrameRate = 0;
+            }
+
+            if(steps > end || steps < start)
+            {
+                steps = start;
+            }
+
+            player = Image.FromFile(playerMovements[steps]);
+        }
+    }
+}
+
